@@ -42,6 +42,8 @@ export class PlatformDetector {
       let args = ['--version'];
       if (command === 'osascript') {
         args = ['-e', 'return 1'];
+      } else if (command === 'powershell') {
+        args = ['-Command', '$PSVersionTable.PSVersion'];
       }
 
       const process = spawn(command, args, {
