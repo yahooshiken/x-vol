@@ -1,4 +1,4 @@
-import { getVolume, setVolume, getMute, setMute } from '../src/index.js';
+import { getVolume, setVolume, getMute, setMute } from '../dist/index.js';
 
 async function demo() {
   try {

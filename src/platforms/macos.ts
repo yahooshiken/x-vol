@@ -1,44 +1,18 @@
-import { spawn } from 'child_process';
+import { execa } from 'execa';
 import { VolumeController } from '../volume-controller.js';
 import { SystemCommandError } from '../errors.js';
 import type { AudioDevice } from '../types.js';
 
 export class MacOSVolumeController extends VolumeController {
   private async executeOsaScript(script: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const process = spawn('osascript', ['-e', script], {
+    try {
+      const result = await execa('osascript', ['-e', script], {
         timeout: 5000,
       });
-
-      let stdout = '';
-      let stderr = '';
-
-      process.stdout?.on('data', (data) => {
-        stdout += data.toString();
-      });
-
-      process.stderr?.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      process.on('close', (code) => {
-        if (code === 0) {
-          resolve(stdout.trim());
-        } else {
-          reject(
-            new SystemCommandError(
-              `osascript -e "${script}"`,
-              new Error(stderr || `Process exited with code ${code}`),
-              'macos'
-            )
-          );
-        }
-      });
-
-      process.on('error', (error) => {
-        reject(new SystemCommandError(`osascript -e "${script}"`, error, 'macos'));
-      });
-    });
+      return result.stdout.trim();
+    } catch (error: any) {
+      throw new SystemCommandError(`osascript -e "${script}"`, error, 'macos');
+    }
   }
 
   async getVolume(device: AudioDevice): Promise<number> {

@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { execa } from 'execa';
 import { VolumeController } from '../volume-controller.js';
 import { SystemCommandError, MissingDependencyError } from '../errors.js';
 import type { AudioDevice } from '../types.js';
@@ -23,40 +23,14 @@ export class LinuxVolumeController extends VolumeController {
   }
 
   private async executeCommand(command: string, args: string[]): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const process = spawn(command, args, {
+    try {
+      const result = await execa(command, args, {
         timeout: 5000,
       });
-
-      let stdout = '';
-      let stderr = '';
-
-      process.stdout?.on('data', (data) => {
-        stdout += data.toString();
-      });
-
-      process.stderr?.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      process.on('close', (code) => {
-        if (code === 0) {
-          resolve(stdout.trim());
-        } else {
-          reject(
-            new SystemCommandError(
-              `${command} ${args.join(' ')}`,
-              new Error(stderr || `Process exited with code ${code}`),
-              'linux'
-            )
-          );
-        }
-      });
-
-      process.on('error', (error) => {
-        reject(new SystemCommandError(`${command} ${args.join(' ')}`, error, 'linux'));
-      });
-    });
+      return result.stdout.trim();
+    } catch (error: any) {
+      throw new SystemCommandError(`${command} ${args.join(' ')}`, error, 'linux');
+    }
   }
 
   private async getVolumeAmixer(device: AudioDevice): Promise<number> {

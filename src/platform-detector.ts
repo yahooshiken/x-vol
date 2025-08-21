@@ -1,9 +1,6 @@
-import { spawn } from 'child_process';
-import { promisify } from 'util';
+import { execa } from 'execa';
 import type { Platform } from './types.js';
 import { UnsupportedPlatformError, MissingDependencyError } from './errors.js';
-
-const execFile = promisify(spawn);
 
 export class PlatformDetector {
   private static cachedPlatform: Platform | null = null;
@@ -46,22 +43,13 @@ export class PlatformDetector {
         args = ['-Command', '$PSVersionTable.PSVersion'];
       }
 
-      const process = spawn(command, args, {
+      await execa(command, args, {
         stdio: 'ignore',
         timeout: 5000,
       });
 
-      const result = await new Promise<boolean>((resolve) => {
-        process.on('close', (code) => {
-          resolve(code === 0);
-        });
-        process.on('error', () => {
-          resolve(false);
-        });
-      });
-
-      this.cachedDependencies.set(command, result);
-      return result;
+      this.cachedDependencies.set(command, true);
+      return true;
     } catch {
       this.cachedDependencies.set(command, false);
       return false;
