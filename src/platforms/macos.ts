@@ -6,7 +6,7 @@ import { VolumeController } from '../volume-controller.js';
 export class MacOSVolumeController extends VolumeController {
   private async executeOsaScript(script: string): Promise<string> {
     try {
-      const result = await execa('osascript', ['-e', script], {
+      const result = await execa('/usr/bin/osascript', ['-e', script], {
         timeout: 5000,
       });
       return result.stdout.trim();

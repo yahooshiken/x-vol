@@ -41,7 +41,7 @@ export async function checkDependency(command: string): Promise<boolean> {
 
   try {
     let args = ['--version'];
-    if (command === 'osascript') {
+    if (command === '/usr/bin/osascript') {
       args = ['-e', 'return 1'];
     } else if (command === 'powershell') {
       args = ['-Command', '$PSVersionTable.PSVersion'];
@@ -71,7 +71,7 @@ export async function validatePlatformDependencies(): Promise<void> {
       break;
     }
     case 'macos': {
-      if (!(await checkDependency('osascript'))) {
+      if (!(await checkDependency('/usr/bin/osascript'))) {
         throw new MissingDependencyError('osascript', platform);
       }
       break;
