@@ -1,6 +1,6 @@
 {
   "name": "x-vol",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
