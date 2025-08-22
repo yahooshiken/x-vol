@@ -58,8 +58,8 @@ export class WindowsVolumeController extends VolumeController {
           int SetChannelVolumeLevelScalar(uint nChannel, float fLevel, Guid pguidEventContext);
           int GetChannelVolumeLevel(uint nChannel, out float pfLevelDB);
           int GetChannelVolumeLevelScalar(uint nChannel, out float pfLevel);
-          int SetMute(bool bMute, Guid pguidEventContext);
-          int GetMute(out bool pbMute);
+          [PreserveSig] int SetMute([MarshalAs(UnmanagedType.Bool)] bool bMute, Guid pguidEventContext);
+          [PreserveSig] int GetMute(out bool pbMute);
           int GetVolumeStepInfo(out uint pnStep, out uint pnStepCount);
           int VolumeStepUp(Guid pguidEventContext);
           int VolumeStepDown(Guid pguidEventContext);
@@ -84,7 +84,7 @@ export class WindowsVolumeController extends VolumeController {
               deviceEnumerator.GetDefaultAudioEndpoint(0, 0, out speakers);
               Guid IID_IAudioEndpointVolume = typeof(IAudioEndpointVolume).GUID;
               object o;
-              speakers.Activate(ref IID_IAudioEndpointVolume, 0, IntPtr.Zero, out o);
+              speakers.Activate(ref IID_IAudioEndpointVolume, 23, IntPtr.Zero, out o);
               return (IAudioEndpointVolume)o;
           }
           public static float Volume {
@@ -103,7 +103,7 @@ export class WindowsVolumeController extends VolumeController {
               deviceEnumerator.GetDefaultAudioEndpoint(1, 0, out microphone);
               Guid IID_IAudioEndpointVolume = typeof(IAudioEndpointVolume).GUID;
               object o;
-              microphone.Activate(ref IID_IAudioEndpointVolume, 0, IntPtr.Zero, out o);
+              microphone.Activate(ref IID_IAudioEndpointVolume, 23, IntPtr.Zero, out o);
               return (IAudioEndpointVolume)o;
           }
           public static float Volume {
