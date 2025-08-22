@@ -1,4 +1,4 @@
-import { PlatformDetector } from './platform-detector.js';
+import { detectPlatform, validatePlatformDependencies } from './platform-detector.js';
 import { LinuxVolumeController } from './platforms/linux.js';
 import { MacOSVolumeController } from './platforms/macos.js';
 import { WindowsVolumeController } from './platforms/windows.js';
@@ -11,7 +11,7 @@ function createVolumeController(): VolumeController {
     return cachedController;
   }
 
-  const platform = PlatformDetector.detectPlatform();
+  const platform = detectPlatform();
 
   switch (platform) {
     case 'windows':
@@ -29,25 +29,25 @@ function createVolumeController(): VolumeController {
 }
 
 export async function getVolume(device: AudioDevice): Promise<number> {
-  await PlatformDetector.validatePlatformDependencies();
+  await validatePlatformDependencies();
   const controller = createVolumeController();
   return controller.getVolume(device);
 }
 
 export async function setVolume(device: AudioDevice, level: number): Promise<void> {
-  await PlatformDetector.validatePlatformDependencies();
+  await validatePlatformDependencies();
   const controller = createVolumeController();
   return controller.setVolume(device, level);
 }
 
 export async function getMute(device: AudioDevice): Promise<boolean> {
-  await PlatformDetector.validatePlatformDependencies();
+  await validatePlatformDependencies();
   const controller = createVolumeController();
   return controller.getMute(device);
 }
 
 export async function setMute(device: AudioDevice, muted: boolean): Promise<void> {
-  await PlatformDetector.validatePlatformDependencies();
+  await validatePlatformDependencies();
   const controller = createVolumeController();
   return controller.setMute(device, muted);
 }

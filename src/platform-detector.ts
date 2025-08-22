@@ -2,85 +2,88 @@ import { execa } from 'execa';
 import { MissingDependencyError, UnsupportedPlatformError } from './errors.js';
 import type { Platform } from './types.js';
 
-export class PlatformDetector {
-  private static cachedPlatform: Platform | null = null;
-  private static cachedDependencies: Map<string, boolean> = new Map();
+let cachedPlatform: Platform | null = null;
+const cachedDependencies: Map<string, boolean> = new Map();
 
-  static detectPlatform(): Platform {
-    if (PlatformDetector.cachedPlatform) {
-      return PlatformDetector.cachedPlatform;
-    }
+export function resetCache(): void {
+  cachedPlatform = null;
+  cachedDependencies.clear();
+}
 
-    const platform = process.platform;
-
-    switch (platform) {
-      case 'win32':
-        PlatformDetector.cachedPlatform = 'windows';
-        break;
-      case 'darwin':
-        PlatformDetector.cachedPlatform = 'macos';
-        break;
-      case 'linux':
-        PlatformDetector.cachedPlatform = 'linux';
-        break;
-      default:
-        throw new UnsupportedPlatformError(platform);
-    }
-
-    return PlatformDetector.cachedPlatform;
+export function detectPlatform(): Platform {
+  if (cachedPlatform) {
+    return cachedPlatform;
   }
 
-  static async checkDependency(command: string): Promise<boolean> {
-    if (PlatformDetector.cachedDependencies.has(command)) {
-      return PlatformDetector.cachedDependencies.get(command) ?? false;
-    }
+  const platform = process.platform;
 
-    try {
-      let args = ['--version'];
-      if (command === 'osascript') {
-        args = ['-e', 'return 1'];
-      } else if (command === 'powershell') {
-        args = ['-Command', '$PSVersionTable.PSVersion'];
-      }
-
-      await execa(command, args, {
-        stdio: 'ignore',
-        timeout: 5000,
-      });
-
-      PlatformDetector.cachedDependencies.set(command, true);
-      return true;
-    } catch {
-      PlatformDetector.cachedDependencies.set(command, false);
-      return false;
-    }
+  switch (platform) {
+    case 'win32':
+      cachedPlatform = 'windows';
+      break;
+    case 'darwin':
+      cachedPlatform = 'macos';
+      break;
+    case 'linux':
+      cachedPlatform = 'linux';
+      break;
+    default:
+      throw new UnsupportedPlatformError(platform);
   }
 
-  static async validatePlatformDependencies(): Promise<void> {
-    const platform = PlatformDetector.detectPlatform();
+  return cachedPlatform;
+}
 
-    switch (platform) {
-      case 'windows': {
-        if (!(await PlatformDetector.checkDependency('powershell'))) {
-          throw new MissingDependencyError('powershell', platform);
-        }
-        break;
-      }
-      case 'macos': {
-        if (!(await PlatformDetector.checkDependency('osascript'))) {
-          throw new MissingDependencyError('osascript', platform);
-        }
-        break;
-      }
-      case 'linux': {
-        const hasAmixer = await PlatformDetector.checkDependency('amixer');
-        const hasPactl = await PlatformDetector.checkDependency('pactl');
+export async function checkDependency(command: string): Promise<boolean> {
+  if (cachedDependencies.has(command)) {
+    return cachedDependencies.get(command) ?? false;
+  }
 
-        if (!hasAmixer && !hasPactl) {
-          throw new MissingDependencyError('amixer or pactl', platform);
-        }
-        break;
+  try {
+    let args = ['--version'];
+    if (command === 'osascript') {
+      args = ['-e', 'return 1'];
+    } else if (command === 'powershell') {
+      args = ['-Command', '$PSVersionTable.PSVersion'];
+    }
+
+    await execa(command, args, {
+      stdio: 'ignore',
+      timeout: 5000,
+    });
+
+    cachedDependencies.set(command, true);
+    return true;
+  } catch {
+    cachedDependencies.set(command, false);
+    return false;
+  }
+}
+
+export async function validatePlatformDependencies(): Promise<void> {
+  const platform = detectPlatform();
+
+  switch (platform) {
+    case 'windows': {
+      if (!(await checkDependency('powershell'))) {
+        throw new MissingDependencyError('powershell', platform);
       }
+      break;
+    }
+    case 'macos': {
+      if (!(await checkDependency('osascript'))) {
+        throw new MissingDependencyError('osascript', platform);
+      }
+      break;
+    }
+    case 'linux': {
+      const hasAmixer = await checkDependency('amixer');
+      const hasPactl = await checkDependency('pactl');
+
+      if (!hasAmixer && !hasPactl) {
+        throw new MissingDependencyError('amixer or pactl', platform);
+      }
+      break;
     }
   }
 }
