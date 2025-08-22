@@ -1,6 +1,6 @@
 {
   "name": "x-vol",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -47,6 +47,6 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "execa": "^9.6.0"
+    "execa": "^8.0.1"
   }
 }
