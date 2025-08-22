@@ -1,5 +1,5 @@
-import type { VolumeController as IVolumeController, AudioDevice } from './types.js';
 import { ValidationError } from './errors.js';
+import type { AudioDevice, VolumeController as IVolumeController } from './types.js';
 
 export abstract class VolumeController implements IVolumeController {
   protected validateVolumeLevel(level: number): void {

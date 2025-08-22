@@ -1,6 +1,6 @@
-import { describe, test, expect, beforeEach, mock } from 'bun:test';
+import { beforeEach, describe, expect, mock, test } from 'bun:test';
+import { MissingDependencyError, UnsupportedPlatformError } from '../../errors.js';
 import { PlatformDetector } from '../../platform-detector.js';
-import { UnsupportedPlatformError, MissingDependencyError } from '../../errors.js';
 
 describe('PlatformDetector', () => {
   beforeEach(() => {

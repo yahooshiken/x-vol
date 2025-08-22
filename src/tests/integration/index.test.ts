@@ -1,6 +1,6 @@
-import { describe, test, expect, beforeAll } from 'bun:test';
-import { getVolume, setVolume, getMute, setMute } from '../../index.js';
-import { ValidationError, UnsupportedPlatformError } from '../../errors.js';
+import { beforeAll, describe, expect, test } from 'bun:test';
+import { UnsupportedPlatformError, ValidationError } from '../../errors.js';
+import { getMute, getVolume, setMute, setVolume } from '../../index.js';
 
 describe('x-vol integration tests', () => {
   let initialOutputVolume: number;

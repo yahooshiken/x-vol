@@ -1,8 +1,8 @@
 import { PlatformDetector } from './platform-detector.js';
-import { WindowsVolumeController } from './platforms/windows.js';
-import { MacOSVolumeController } from './platforms/macos.js';
 import { LinuxVolumeController } from './platforms/linux.js';
-import type { VolumeController, AudioDevice } from './types.js';
+import { MacOSVolumeController } from './platforms/macos.js';
+import { WindowsVolumeController } from './platforms/windows.js';
+import type { AudioDevice, VolumeController } from './types.js';
 
 let cachedController: VolumeController | null = null;
 

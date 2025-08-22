@@ -1,10 +1,10 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 import {
-  XVolError,
-  UnsupportedPlatformError,
-  SystemCommandError,
-  ValidationError,
   MissingDependencyError,
+  SystemCommandError,
+  UnsupportedPlatformError,
+  ValidationError,
+  XVolError,
 } from '../../errors.js';
 
 describe('XVolError', () => {

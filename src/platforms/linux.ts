@@ -1,7 +1,7 @@
 import { execa } from 'execa';
-import { VolumeController } from '../volume-controller.js';
-import { SystemCommandError, MissingDependencyError } from '../errors.js';
+import { MissingDependencyError, SystemCommandError } from '../errors.js';
 import type { AudioDevice } from '../types.js';
+import { VolumeController } from '../volume-controller.js';
 
 export class LinuxVolumeController extends VolumeController {
   private useAmixer: boolean | null = null;
@@ -28,8 +28,15 @@ export class LinuxVolumeController extends VolumeController {
         timeout: 5000,
       });
       return result.stdout.trim();
-    } catch (error: any) {
-      throw new SystemCommandError(`${command} ${args.join(' ')}`, error, 'linux');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new SystemCommandError(`${command} ${args.join(' ')}`, error, 'linux');
+      }
+      throw new SystemCommandError(
+        `${command} ${args.join(' ')}`,
+        new Error('Unknown error'),
+        'linux'
+      );
     }
   }
 
@@ -44,7 +51,7 @@ export class LinuxVolumeController extends VolumeController {
         'linux'
       );
     }
-    return parseInt(match[1], 10);
+    return Number.parseInt(match[1], 10);
   }
 
   private async setVolumeAmixer(device: AudioDevice, level: number): Promise<void> {
@@ -75,7 +82,7 @@ export class LinuxVolumeController extends VolumeController {
         'linux'
       );
     }
-    return parseInt(match[1], 10);
+    return Number.parseInt(match[1], 10);
   }
 
   private async setVolumePactl(device: AudioDevice, level: number): Promise<void> {
@@ -102,9 +109,8 @@ export class LinuxVolumeController extends VolumeController {
 
     if (this.useAmixer) {
       return this.getVolumeAmixer(device);
-    } else {
-      return this.getVolumePactl(device);
     }
+    return this.getVolumePactl(device);
   }
 
   protected async doSetVolume(device: AudioDevice, level: number): Promise<void> {
@@ -122,9 +128,9 @@ export class LinuxVolumeController extends VolumeController {
 
     if (this.useAmixer) {
       return this.getMuteAmixer(device);
-    } else {
-      return this.getMutePactl(device);
     }
+
+    return this.getMutePactl(device);
   }
 
   protected async doSetMute(device: AudioDevice, muted: boolean): Promise<void> {

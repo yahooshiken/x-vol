@@ -1,38 +1,38 @@
 import { execa } from 'execa';
+import { MissingDependencyError, UnsupportedPlatformError } from './errors.js';
 import type { Platform } from './types.js';
-import { UnsupportedPlatformError, MissingDependencyError } from './errors.js';
 
 export class PlatformDetector {
   private static cachedPlatform: Platform | null = null;
   private static cachedDependencies: Map<string, boolean> = new Map();
 
   static detectPlatform(): Platform {
-    if (this.cachedPlatform) {
-      return this.cachedPlatform;
+    if (PlatformDetector.cachedPlatform) {
+      return PlatformDetector.cachedPlatform;
     }
 
     const platform = process.platform;
 
     switch (platform) {
       case 'win32':
-        this.cachedPlatform = 'windows';
+        PlatformDetector.cachedPlatform = 'windows';
         break;
       case 'darwin':
-        this.cachedPlatform = 'macos';
+        PlatformDetector.cachedPlatform = 'macos';
         break;
       case 'linux':
-        this.cachedPlatform = 'linux';
+        PlatformDetector.cachedPlatform = 'linux';
         break;
       default:
         throw new UnsupportedPlatformError(platform);
     }
 
-    return this.cachedPlatform;
+    return PlatformDetector.cachedPlatform;
   }
 
   static async checkDependency(command: string): Promise<boolean> {
-    if (this.cachedDependencies.has(command)) {
-      return this.cachedDependencies.get(command)!;
+    if (PlatformDetector.cachedDependencies.has(command)) {
+      return PlatformDetector.cachedDependencies.get(command) ?? false;
     }
 
     try {
@@ -48,36 +48,39 @@ export class PlatformDetector {
         timeout: 5000,
       });
 
-      this.cachedDependencies.set(command, true);
+      PlatformDetector.cachedDependencies.set(command, true);
       return true;
     } catch {
-      this.cachedDependencies.set(command, false);
+      PlatformDetector.cachedDependencies.set(command, false);
       return false;
     }
   }
 
   static async validatePlatformDependencies(): Promise<void> {
-    const platform = this.detectPlatform();
+    const platform = PlatformDetector.detectPlatform();
 
     switch (platform) {
-      case 'windows':
-        if (!(await this.checkDependency('powershell'))) {
+      case 'windows': {
+        if (!(await PlatformDetector.checkDependency('powershell'))) {
           throw new MissingDependencyError('powershell', platform);
         }
         break;
-      case 'macos':
-        if (!(await this.checkDependency('osascript'))) {
+      }
+      case 'macos': {
+        if (!(await PlatformDetector.checkDependency('osascript'))) {
           throw new MissingDependencyError('osascript', platform);
         }
         break;
-      case 'linux':
-        const hasAmixer = await this.checkDependency('amixer');
-        const hasPactl = await this.checkDependency('pactl');
+      }
+      case 'linux': {
+        const hasAmixer = await PlatformDetector.checkDependency('amixer');
+        const hasPactl = await PlatformDetector.checkDependency('pactl');
 
         if (!hasAmixer && !hasPactl) {
           throw new MissingDependencyError('amixer or pactl', platform);
         }
         break;
+      }
     }
   }
 }

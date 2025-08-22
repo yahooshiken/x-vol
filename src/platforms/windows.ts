@@ -1,35 +1,44 @@
 import { execa } from 'execa';
-import { VolumeController } from '../volume-controller.js';
 import { SystemCommandError } from '../errors.js';
 import type { AudioDevice } from '../types.js';
+import { VolumeController } from '../volume-controller.js';
 
 export class WindowsVolumeController extends VolumeController {
-  private async executeCommand(action: string, device: AudioDevice, value?: number | boolean): Promise<string> {
+  private async executeCommand(
+    action: string,
+    device: AudioDevice,
+    value?: number | boolean
+  ): Promise<string> {
     let command: string;
 
     switch (action) {
       case 'get-volume':
-        command = device === 'output' 
-          ? `try { [Math]::Round([Audio]::Volume * 100) } catch { Write-Output "0" }`
-          : `try { [Math]::Round([AudioInput]::Volume * 100) } catch { Write-Output "0" }`;
+        command =
+          device === 'output'
+            ? `try { [Math]::Round([Audio]::Volume * 100) } catch { Write-Output "0" }`
+            : `try { [Math]::Round([AudioInput]::Volume * 100) } catch { Write-Output "0" }`;
         break;
       case 'set-volume':
-        command = device === 'output' 
-          ? `[Audio]::Volume = ${(value as number) / 100}`
-          : `[AudioInput]::Volume = ${(value as number) / 100}`;
+        command =
+          device === 'output'
+            ? `[Audio]::Volume = ${(value as number) / 100}`
+            : `[AudioInput]::Volume = ${(value as number) / 100}`;
         break;
       case 'get-mute':
-        command = device === 'output' 
-          ? `[Audio]::Mute`
-          : `[AudioInput]::Mute`;
+        command = device === 'output' ? '[Audio]::Mute' : '[AudioInput]::Mute';
         break;
       case 'set-mute':
-        command = device === 'output'
-          ? `[Audio]::Mute = [bool]::Parse("${value}")`
-          : `[AudioInput]::Mute = [bool]::Parse("${value}")`;
+        command =
+          device === 'output'
+            ? `[Audio]::Mute = [bool]::Parse("${value}")`
+            : `[AudioInput]::Mute = [bool]::Parse("${value}")`;
         break;
       default:
-        throw new SystemCommandError(`Unknown action: ${action}`, new Error('Invalid action'), 'windows');
+        throw new SystemCommandError(
+          `Unknown action: ${action}`,
+          new Error('Invalid action'),
+          'windows'
+        );
     }
 
     const fullScript = `
@@ -111,13 +120,20 @@ export class WindowsVolumeController extends VolumeController {
     `;
 
     try {
-      const result = await execa('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', fullScript], {
-        windowsHide: true,
-        timeout: 5000,
-      });
+      const result = await execa(
+        'powershell',
+        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', fullScript],
+        {
+          windowsHide: true,
+          timeout: 5000,
+        }
+      );
       return result.stdout.trim();
-    } catch (error: any) {
-      throw new SystemCommandError(`powershell ${action}`, error, 'windows');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new SystemCommandError(`powershell ${action}`, error, 'windows');
+      }
+      throw new SystemCommandError(`powershell ${action}`, new Error('Unknown error'), 'windows');
     }
   }
 

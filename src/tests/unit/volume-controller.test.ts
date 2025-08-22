@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeEach } from 'bun:test';
-import { VolumeController } from '../../volume-controller.js';
+import { beforeEach, describe, expect, test } from 'bun:test';
 import { ValidationError } from '../../errors.js';
 import type { AudioDevice } from '../../types.js';
+import { VolumeController } from '../../volume-controller.js';
 
 class TestVolumeController extends VolumeController {
   async getVolume(device: AudioDevice): Promise<number> {
